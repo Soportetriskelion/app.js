@@ -9,11 +9,11 @@ app.use(express.json());
 
 // Set port and verify_token
 const port = process.env.PORT || 3000;
-const verifyToken = process.env.tokenbot;
+const verifyToken = process.env.verifytoken;
 
 // Route for GET requests
 app.get('/', (req, res) => {
-  const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.tokenbot': token } = req.query;
+  const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verifytoken': token } = req.query;
 
   if (mode === 'subscribe' && token === verifyToken) {
     console.log('WEBHOOK VERIFIED');
