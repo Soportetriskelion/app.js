@@ -1,97 +1,71 @@
-// server.js
+require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
-require("dotenv").config();
 
 const app = express();
 app.use(express.json());
 
-// Puerto asignado por Render
-const PORT = process.env.PORT || 3000;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN.trim();
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID.trim();
 
-// ========================
-// Verificación de Webhook
-// ========================
+console.log("✅ Servidor iniciado");
+console.log("PHONE_NUMBER_ID:", PHONE_NUMBER_ID);
+
+// ✅ Verificación del webhook (Meta)
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
   if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    console.log("Webhook verificado ✅");
+    console.log("✅ Webhook verificado");
     return res.status(200).send(challenge);
   } else {
-    console.log("Webhook no verificado ❌");
     return res.sendStatus(403);
   }
 });
 
-// ========================
-// Recepción de mensajes
-// ========================
+// ✅ Recepción de mensajes
 app.post("/webhook", async (req, res) => {
-  const body = req.body;
-
-  const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
-
-  if (!message) {
-    return res.sendStatus(200); // No hay mensaje, respondemos 200
-  }
-
-  const from = message.from; // Número del remitente
-  const text = message.text?.body || "";
-
-  console.log("Mensaje recibido de", from, ":", text);
-
-  const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID?.trim();
-  const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN?.trim();
-
-  if (!PHONE_NUMBER_ID || !WHATSAPP_TOKEN) {
-    console.error("❌ Falta PHONE_NUMBER_ID o WHATSAPP_TOKEN en variables de entorno");
-    return res.sendStatus(500);
-  }
-
-  // ⚠️ Solo funciona si 'from' está autorizado en Sandbox
   try {
-    const response = await axios.post(
-      `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
-      {
-        messaging_product: "whatsapp",
-        to: from,
-        text: { body: `Hola 👋 recibimos tu mensaje: "${text}"` }
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-          "Content-Type": "application/json"
+    const body = req.body;
+
+    const message =
+      body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+
+    if (message) {
+      const from = message.from;
+      const text = message.text?.body;
+
+      console.log("📩 Mensaje recibido de", from, ":", text);
+
+      // enviar respuesta
+      await axios.post(
+        `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
+        {
+          messaging_product: "whatsapp",
+          to: from,
+          type: "text",
+          text: { body: "👋 Hola, recibimos tu mensaje correctamente." }
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+            "Content-Type": "application/json"
+          }
         }
-      }
-    );
-
-    console.log("Mensaje enviado correctamente:", response.data);
-  } catch (error) {
-    if (error.response) {
-      console.error(
-        "Error enviando mensaje:",
-        error.response.status,
-        JSON.stringify(error.response.data, null, 2)
       );
-      // Detecta si el número no está autorizado en sandbox
-      if (error.response.data?.error?.code === 131030) {
-        console.error("⚠️ El número del remitente no está autorizado en Sandbox");
-      }
-    } else {
-      console.error("Error enviando mensaje:", error.message);
+
+      console.log("✅ Respuesta enviada");
     }
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("❌ Error:", error.response?.data || error.message);
+    res.sendStatus(500);
   }
-
-  res.sendStatus(200);
 });
 
-// ========================
-// Iniciar servidor
-// ========================
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en Render en el puerto ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Servidor en puerto ${PORT}`));
