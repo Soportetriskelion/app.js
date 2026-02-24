@@ -53,32 +53,6 @@ app.post("/webhook", async (req, res) => {
 });
 
 // ====== CONSULTAR AZURE OPENAI ======
-async function obtenerRespuestaIA(texto) {
-  try {
-    const response = await axios.post(
-      process.env.AZURE_OPENAI_ENDPOINT,
-      {
-        messages: [
-          { role: "system", content: "Eres un asistente útil y profesional." },
-          { role: "user", content: texto },
-        ],
-        max_tokens: 200,
-        temperature: 0.7,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": process.env.AZURE_OPENAI_KEY,
-        },
-      }
-    );
-
-    return response.data.choices[0].message.content;
-  } catch (error) {
-    console.error("Error IA:", error.response?.data || error.message);
-    return "Lo siento, ocurrió un error procesando tu mensaje.";
-  }
-}
 
 // ====== ENVIAR MENSAJE A WHATSAPP ======
 async function enviarMensajeWhatsApp(numero, mensaje) {
