@@ -7,9 +7,9 @@ const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
-const WHATSAPP_TOKEN = process.env.1609500386861065; // Token de WhatsApp Cloud API
-const PHONE_NUMBER_ID = process.env.941811762360051; // ID de tu número de WhatsApp
-const VERIFY_TOKEN = process.env.tokenbot; // Token para verificar webhook
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN; // Token de WhatsApp Cloud API
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID; // ID de tu número de WhatsApp
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN; // Token para verificar webhook
 
 // =======================
 // ✅ Endpoint para verificación de webhook
