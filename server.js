@@ -1,31 +1,32 @@
-const express = require("express");
-const app = express();
+const axios = require("axios");
 
-app.use(express.json());
+app.post("/webhook", async (req, res) => {
+  const body = req.body;
 
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+  const message =
+    body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
-// 🔹 Verificación webhook
-app.get("/webhook", (req, res) => {
-  const mode = req.query["hub.mode"];
-  const token = req.query["hub.verify_token"];
-  const challenge = req.query["hub.challenge"];
+  if (message) {
+    const from = message.from;
+    const text = message.text?.body;
 
-  if (mode === "subscribe" && token === VERIFY_TOKEN) {
-    console.log("Webhook verificado correctamente");
-    return res.status(200).send(challenge);
-  } else {
-    return res.sendStatus(403);
+    console.log("Mensaje:", text);
+
+    await axios.post(
+      `https://graph.facebook.com/v19.0/${process.env.PHONE_NUMBER_ID}/messages`,
+      {
+        messaging_product: "whatsapp",
+        to: from,
+        text: { body: "Hola 👋 recibimos tu mensaje" }
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
   }
-});
-
-// 🔹 Recibir mensajes de WhatsApp
-app.post("/webhook", (req, res) => {
-  console.log("Mensaje recibido:");
-  console.log(JSON.stringify(req.body, null, 2));
 
   res.sendStatus(200);
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor activo en puerto ${PORT}`));
