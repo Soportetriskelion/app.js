@@ -6,6 +6,7 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 
+// Puerto asignado por Render
 const PORT = process.env.PORT || 3000;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
@@ -17,16 +18,13 @@ app.get("/webhook", (req, res) => {
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
-  if (mode && token) {
-    if (mode === "subscribe" && token === VERIFY_TOKEN) {
-      console.log("Webhook verificado ✅");
-      return res.status(200).send(challenge);
-    } else {
-      console.log("Webhook no verificado ❌");
-      return res.sendStatus(403);
-    }
+  if (mode === "subscribe" && token === VERIFY_TOKEN) {
+    console.log("Webhook verificado ✅");
+    return res.status(200).send(challenge); // Importante: enviar el challenge exacto
+  } else {
+    console.log("Webhook no verificado ❌");
+    return res.sendStatus(403);
   }
-  res.sendStatus(400);
 });
 
 // ========================
@@ -46,12 +44,11 @@ app.post("/webhook", async (req, res) => {
 
   console.log("Mensaje recibido de", from, ":", text);
 
-  // Variables de entorno
   const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID?.trim();
   const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN?.trim();
 
   if (!PHONE_NUMBER_ID || !WHATSAPP_TOKEN) {
-    console.error("❌ Falta PHONE_NUMBER_ID o WHATSAPP_TOKEN en .env");
+    console.error("❌ Falta PHONE_NUMBER_ID o WHATSAPP_TOKEN en variables de entorno");
     return res.sendStatus(500);
   }
 
@@ -91,5 +88,5 @@ app.post("/webhook", async (req, res) => {
 // Iniciar servidor
 // ========================
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en Render en el puerto ${PORT}`);
 });
