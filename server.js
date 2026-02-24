@@ -8,6 +8,8 @@ app.use(express.json());
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN.trim();
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID.trim();
+console.log("TOKEN length:", WHATSAPP_TOKEN.length);
+console.log("PHONE_NUMBER_ID:", PHONE_NUMBER_ID);
 
 console.log("✅ Servidor iniciado");
 console.log("PHONE_NUMBER_ID:", PHONE_NUMBER_ID);
@@ -41,25 +43,23 @@ app.post("/webhook", async (req, res) => {
       console.log("📩 Mensaje recibido de", from, ":", text);
 
       // enviar respuesta
-      await axios.post(
-        `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
-        {
-          messaging_product: "whatsapp",
-          to: from,
-          type: "text",
-          text: { body: "👋 Hola, recibimos tu mensaje correctamente." }
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-
+ 
       console.log("✅ Respuesta enviada");
     }
-
+await axios({
+  method: "POST",
+  url: `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
+  headers: {
+    Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+    "Content-Type": "application/json"
+  },
+  data: {
+    messaging_product: "whatsapp",
+    to: from,
+    type: "text",
+    text: { body: "✅ Bot activo en Render" }
+  }
+});
     res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error:", error.response?.data || error.message);
