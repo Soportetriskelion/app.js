@@ -1,4 +1,5 @@
 // server.js
+console.log('Token leído:', WHATSAPP_TOKEN ? 'OK' : 'NO LEÍDO');
 const express = require('express');
 const axios = require('axios');
 require('dotenv').config(); // Solo si estás usando .env local
