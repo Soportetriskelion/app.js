@@ -30,6 +30,8 @@ app.get("/webhook", (req, res) => {
 
 // ✅ Recepción de mensajes
 app.post("/webhook", async (req, res) => {
+  let from = null; // 👈 evita error "from is not defined"
+
   try {
     const body = req.body;
 
@@ -37,27 +39,34 @@ app.post("/webhook", async (req, res) => {
       body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
     if (message) {
-      const from = message.from;
+      from = message.from;
       const text = message.text?.body;
 
       console.log("📩 Mensaje recibido de", from, ":", text);
 
-      // enviar respuesta
- 
+      await axios({
+        method: "POST",
+        url: `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
+        headers: {
+          Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        data: {
+          messaging_product: "whatsapp",
+          to: from,
+          type: "text",
+          text: { body: "✅ Bot activo en Render" }
+        }
+      });
+
       console.log("✅ Respuesta enviada");
     }
-await axios({
-  method: "POST",
-  url: `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
-  headers: {
-    Authorization: `Bearer ${WHATSAPP_TOKEN}`,
-    "Content-Type": "application/json"
-  },
-  data: {
-    messaging_product: "whatsapp",
-    to: from,
-    type: "text",
-    text: { body: "✅ Bot activo en Render" }
+
+    res.sendStatus(200);
+
+  } catch (error) {
+    console.error("❌ Error:", error.response?.data || error.message);
+    res.sendStatus(500);
   }
 });
     res.sendStatus(200);
