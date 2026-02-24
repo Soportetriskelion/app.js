@@ -8,13 +8,10 @@ app.use(express.json());
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN.trim();
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID.trim();
-console.log("TOKEN length:", WHATSAPP_TOKEN.length);
-console.log("PHONE_NUMBER_ID:", PHONE_NUMBER_ID);
 
 console.log("✅ Servidor iniciado");
-console.log("PHONE_NUMBER_ID:", PHONE_NUMBER_ID);
 
-// ✅ Verificación del webhook (Meta)
+// 🔹 Verificación del webhook
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
@@ -28,9 +25,9 @@ app.get("/webhook", (req, res) => {
   }
 });
 
-// ✅ Recepción de mensajes
+// 🔹 Recepción de mensajes
 app.post("/webhook", async (req, res) => {
-  let from = null; // 👈 evita error "from is not defined"
+  let from = null;
 
   try {
     const body = req.body;
@@ -64,12 +61,6 @@ app.post("/webhook", async (req, res) => {
 
     res.sendStatus(200);
 
-  } catch (error) {
-    console.error("❌ Error:", error.response?.data || error.message);
-    res.sendStatus(500);
-  }
-});
-    res.sendStatus(200);
   } catch (error) {
     console.error("❌ Error:", error.response?.data || error.message);
     res.sendStatus(500);
