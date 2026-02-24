@@ -20,7 +20,7 @@ app.get("/webhook", (req, res) => {
 
   if (mode === "subscribe" && token === VERIFY_TOKEN) {
     console.log("Webhook verificado ✅");
-    return res.status(200).send(challenge); // Importante: enviar el challenge exacto
+    return res.status(200).send(challenge);
   } else {
     console.log("Webhook no verificado ❌");
     return res.sendStatus(403);
@@ -52,13 +52,14 @@ app.post("/webhook", async (req, res) => {
     return res.sendStatus(500);
   }
 
+  // ⚠️ Solo funciona si 'from' está autorizado en Sandbox
   try {
     const response = await axios.post(
       `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
       {
         messaging_product: "whatsapp",
         to: from,
-        text: { body: "Hola 👋 recibimos tu mensaje, pronto te responderemos" }
+        text: { body: `Hola 👋 recibimos tu mensaje: "${text}"` }
       },
       {
         headers: {
@@ -76,6 +77,10 @@ app.post("/webhook", async (req, res) => {
         error.response.status,
         JSON.stringify(error.response.data, null, 2)
       );
+      // Detecta si el número no está autorizado en sandbox
+      if (error.response.data?.error?.code === 131030) {
+        console.error("⚠️ El número del remitente no está autorizado en Sandbox");
+      }
     } else {
       console.error("Error enviando mensaje:", error.message);
     }
