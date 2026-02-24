@@ -1,8 +1,7 @@
 // server.js
-console.log('Token leído:', WHATSAPP_TOKEN ? 'OK' : 'NO LEÍDO');
 const express = require('express');
 const axios = require('axios');
-require('dotenv').config(); // Solo si estás usando .env local
+require('dotenv').config(); // Para cargar .env si estás usando localmente
 
 const app = express();
 app.use(express.json());
@@ -35,20 +34,20 @@ app.get('/webhook', (req, res) => {
 // =======================
 app.post('/webhook', async (req, res) => {
   try {
-    console.log('📩 WEBHOOK RECIBIDO:');
-    console.log(JSON.stringify(req.body, null, 2));
+    // 🔹 Verificar si el token se está leyendo
+    console.log('Token leído:', WHATSAPP_TOKEN ? 'OK' : 'NO LEÍDO');
 
     const entry = req.body.entry?.[0]?.changes?.[0]?.value;
     const message = entry?.messages?.[0];
-    if (!message) return res.sendStatus(200); // Si no hay mensaje, respondemos 200
+
+    if (!message) return res.sendStatus(200); // No hay mensaje
 
     const from = message.from; // Número del remitente
     const text = message.text?.body || '';
+    const contactName = entry.contacts?.[0]?.profile?.name || '';
 
     console.log('📨 Mensaje recibido de', from, ':', text);
 
-    // -----------------------
-    // Validación rápida del token
     if (!WHATSAPP_TOKEN) {
       console.error('❌ Token no definido. Revisa tus variables de entorno.');
       return res.sendStatus(500);
@@ -56,7 +55,7 @@ app.post('/webhook', async (req, res) => {
 
     // -----------------------
     // Preparar respuesta
-    const responseText = `Hola ${entry.contacts?.[0]?.profile?.name || ''}! Recibí tu mensaje: "${text}"`;
+    const responseText = `Hola ${contactName}! Recibí tu mensaje: "${text}"`;
 
     // -----------------------
     // Enviar respuesta usando WhatsApp Cloud API
