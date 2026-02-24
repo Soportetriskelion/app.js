@@ -1,4 +1,4 @@
-// index.js
+// server.js
 const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
@@ -9,7 +9,9 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
-// Endpoint para verificación de Meta
+// ========================
+// Verificación de Webhook
+// ========================
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
@@ -27,26 +29,29 @@ app.get("/webhook", (req, res) => {
   res.sendStatus(400);
 });
 
-// Endpoint para recibir mensajes
+// ========================
+// Recepción de mensajes
+// ========================
 app.post("/webhook", async (req, res) => {
   const body = req.body;
 
-  // Validar que existen mensajes
   const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+
   if (!message) {
-    return res.sendStatus(200); // No hay mensaje, solo respondemos 200
+    return res.sendStatus(200); // No hay mensaje, respondemos 200
   }
 
-  const from = message.from;
+  const from = message.from; // Número del remitente
   const text = message.text?.body || "";
+
   console.log("Mensaje recibido de", from, ":", text);
 
-  // Validar que existan variables de entorno
-  const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
-  const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
+  // Variables de entorno
+  const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID?.trim();
+  const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN?.trim();
 
   if (!PHONE_NUMBER_ID || !WHATSAPP_TOKEN) {
-    console.error("Falta PHONE_NUMBER_ID o WHATSAPP_TOKEN en .env");
+    console.error("❌ Falta PHONE_NUMBER_ID o WHATSAPP_TOKEN en .env");
     return res.sendStatus(500);
   }
 
@@ -82,7 +87,9 @@ app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
 });
 
-// Inicia servidor
+// ========================
+// Iniciar servidor
+// ========================
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
