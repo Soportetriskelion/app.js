@@ -1,24 +1,26 @@
 // server.js
 const express = require('express');
 const axios = require('axios');
-require('dotenv').config(); // Solo si usas .env local
+require('dotenv').config(); // Solo si estás usando .env local
 
 const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
-const WHATSAPP_TOKEN = process.env.1609500386861065; // Tu token de Meta
+const WHATSAPP_TOKEN = process.env.1609500386861065; // Token de WhatsApp Cloud API
 const PHONE_NUMBER_ID = process.env.941811762360051; // ID de tu número de WhatsApp
+const VERIFY_TOKEN = process.env.tokenbot; // Token para verificar webhook
 
-// ✅ Endpoint de verificación (GET) para Webhook
+// =======================
+// ✅ Endpoint para verificación de webhook
+// =======================
 app.get('/webhook', (req, res) => {
-  const verify_token = process.env.VERIFY_TOKEN;
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
 
   if (mode && token) {
-    if (mode === 'subscribe' && token === verify_token) {
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
       console.log('WEBHOOK VERIFICADO ✅');
       res.status(200).send(challenge);
     } else {
@@ -27,26 +29,36 @@ app.get('/webhook', (req, res) => {
   }
 });
 
-// ✅ Endpoint para recibir mensajes (POST)
+// =======================
+// ✅ Endpoint para recibir mensajes
+// =======================
 app.post('/webhook', async (req, res) => {
   try {
     console.log('📩 WEBHOOK RECIBIDO:');
     console.log(JSON.stringify(req.body, null, 2));
 
-    // Validar si hay mensaje
     const entry = req.body.entry?.[0]?.changes?.[0]?.value;
     const message = entry?.messages?.[0];
-    if (!message) return res.sendStatus(200);
+    if (!message) return res.sendStatus(200); // Si no hay mensaje, respondemos 200
 
-    const from = message.from;
-    const text = message.text?.body;
+    const from = message.from; // Número del remitente
+    const text = message.text?.body || '';
 
-    console.log('📨 Mensaje:', text);
+    console.log('📨 Mensaje recibido de', from, ':', text);
 
-    // Preparar la respuesta
-    const responseText = `Hola! Recibí tu mensaje: "${text}"`;
+    // -----------------------
+    // Validación rápida del token
+    if (!WHATSAPP_TOKEN) {
+      console.error('❌ Token no definido. Revisa tus variables de entorno.');
+      return res.sendStatus(500);
+    }
 
-    // Enviar mensaje usando WhatsApp Cloud API
+    // -----------------------
+    // Preparar respuesta
+    const responseText = `Hola ${entry.contacts?.[0]?.profile?.name || ''}! Recibí tu mensaje: "${text}"`;
+
+    // -----------------------
+    // Enviar respuesta usando WhatsApp Cloud API
     const url = `https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`;
 
     const response = await axios.post(
@@ -72,7 +84,9 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// Iniciar servidor
+// =======================
+// 🔹 Iniciar servidor
+// =======================
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en puerto ${PORT}`);
 });
