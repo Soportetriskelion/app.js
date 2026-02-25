@@ -16,7 +16,7 @@ function fueraDeHorario() {
   const hora = ahora.getHours();
 
   // horario laboral: 8 AM a 6 PM
-  return hora < 8 || hora >= 18;
+  return hora < 8 || hora >= 10;
 }
 // 🔹 Verificación del webhook
 app.get("/webhook", (req, res) => {
