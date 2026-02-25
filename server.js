@@ -44,56 +44,31 @@ app.post("/webhook", async (req, res) => {
 
   if (message) {
   from = message.from;
- const text = message.text?.body?.trim();
-console.log("📩 Mensaje recibido de", from, ":", text);
+  const text = message.text?.body;
 
-let respuesta = "";
+  console.log("📩 Mensaje recibido de", from, ":", text);
 
-// 🔹 menú de soporte
-if (text === "1") {
-  respuesta = `📡 SIN SEÑAL GPS
+  let respuesta = "";
 
-Verifica:
-✅ La unidad esté encendida
-✅ El dispositivo tenga energía
-✅ Esté en zona con cobertura celular
-
-Si continúa, mañana revisamos tu unidad.`;
-}
-else if (text === "2") {
-  respuesta = `🌐 PLATAFORMA NO ABRE
-
-Intenta:
-✅ revisar internet
-✅ usar Google Chrome
-✅ borrar caché del navegador
-
-Si continúa, lo revisamos en horario laboral.`;
-}
-else {
-  // mensaje normal automático
   if (fueraDeHorario()) {
-    respuesta = `⏰ Estamos fuera de horario.
-
-Nuestro horario es:
-🕗 8:00 AM a 11:00 AM
-
-Escribe:
-
-1️⃣ Sin señal GPS
-2️⃣ Plataforma no abre
-
-Te responderemos en cuanto estemos disponibles.`;
+    respuesta = "👋 Gracias por comunicarte con soporte técnico. Nuestro horario es de 8:00 am a 6:00 pm. Mientras tanto puedes escribir: 1️⃣ No tengo señal GPS 2️⃣ La plataforma no abre 3️⃣ No puedo ver mi unidad 4️⃣ Reportar robo o emergencia 5️⃣ Hablar con soporte Escribe el número de tu problema";
   } else {
-    respuesta = `👋 Soporte GPS activo
-
-Escribe el número de tu problema:
-
-1️⃣ Sin señal GPS
-2️⃣ Plataforma no abre`;
+    respuesta = "✅ Gracias por comunicarte con soporte técnico.\n¿En qué podemos ayudarte?";
   }
-}
-                 );
+      await axios({
+        method: "POST",
+        url: `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
+        headers: {
+          Authorization: `Bearer ${WHATSAPP_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        data: {
+          messaging_product: "whatsapp",
+          to: from,
+          type: "text",
+          text: { body: respuesta }
+        }
+      });
 
       console.log("✅ Respuesta enviada");
     }
