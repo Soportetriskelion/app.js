@@ -22,7 +22,7 @@ function fueraDeHorario() {
   });
 
   const hora = Number(ahoraStr.split(", ")[1].split(":")[0]);
-  return hora < 8 || hora >= 18; // fuera de 8 AM – 6 PM
+  return hora < 8 || hora >= 11; // fuera de 8 AM – 11 AM
 }
 
 // ==========================
