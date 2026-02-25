@@ -5,6 +5,14 @@ const axios = require("axios");
 const app = express();
 app.use(express.json());
 
+// 🔽 PEGAR AQUÍ
+function fueraDeHorario() {
+  const ahora = new Date();
+  const hora = ahora.getHours();
+
+  return hora < 8 || hora >= 10;
+}
+
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN.trim();
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID.trim();
@@ -40,7 +48,9 @@ app.post("/webhook", async (req, res) => {
       const text = message.text?.body;
 
       console.log("📩 Mensaje recibido de", from, ":", text);
-
+ if (fueraDeHorario()) {
+    respuesta = "Estamos fuera de horario.";
+  }
       await axios({
         method: "POST",
         url: `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
