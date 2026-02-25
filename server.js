@@ -64,7 +64,29 @@ Mientras tanto puedes escribir:
 5️⃣ Hablar con soporte
 
 Escribe el número de tu problema.`;
-} else {
+} 
+  if (mensaje === "1") {
+  respuesta = `📡 SIN SEÑAL GPS
+
+Verifica:
+✅ La unidad esté encendida
+✅ El dispositivo tenga energía
+✅ Esté en zona con cobertura celular
+
+Si continúa, mañana revisamos tu unidad.`;
+}
+
+if (mensaje === "2") {
+  respuesta = `🌐 PLATAFORMA NO ABRE
+
+Intenta:
+✅ revisar internet
+✅ usar Google Chrome
+✅ borrar caché del navegador
+
+Si continúa, lo revisamos en horario laboral.`;
+}
+  else {
     respuesta = "✅ Gracias por comunicarte con soporte técnico.\n¿En qué podemos ayudarte?";
   }
       await axios({
