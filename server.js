@@ -4,6 +4,11 @@ const axios = require("axios");
 
 const app = express();
 app.use(express.json());
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN.trim();
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID.trim();
+
+console.log("✅ Servidor iniciado");
 
 // 🔽 PEGAR AQUÍ
 function fueraDeHorario() {
@@ -12,13 +17,6 @@ function fueraDeHorario() {
 
   return hora < 8 || hora >= 10;
 }
-
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN.trim();
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID.trim();
-
-console.log("✅ Servidor iniciado");
-
 // 🔹 Verificación del webhook
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
