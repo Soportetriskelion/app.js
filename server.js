@@ -15,7 +15,8 @@ function fueraDeHorario() {
   const ahora = new Date();
   const hora = ahora.getHours();
 
-  return hora < 8 || hora >= 10;
+  // horario laboral: 8 AM a 6 PM
+  return hora < 8 || hora >= 18;
 }
 // 🔹 Verificación del webhook
 app.get("/webhook", (req, res) => {
@@ -41,13 +42,18 @@ app.post("/webhook", async (req, res) => {
     const message =
       body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
-    if (message) {
-      from = message.from;
-      const text = message.text?.body;
+  if (message) {
+  from = message.from;
+  const text = message.text?.body;
 
-      console.log("📩 Mensaje recibido de", from, ":", text);
- if (fueraDeHorario()) {
-    respuesta = "Estamos fuera de horario.";
+  console.log("📩 Mensaje recibido de", from, ":", text);
+
+  let respuesta = "";
+
+  if (fueraDeHorario()) {
+    respuesta = "⏰ Gracias por contactarnos.\nNuestro horario de atención es de 8:00 AM a 6:00 PM.\nTu mensaje fue recibido y te responderemos en cuanto estemos disponibles.";
+  } else {
+    respuesta = "✅ Gracias por comunicarte con soporte técnico.\n¿En qué podemos ayudarte?";
   }
       await axios({
         method: "POST",
@@ -60,7 +66,7 @@ app.post("/webhook", async (req, res) => {
           messaging_product: "whatsapp",
           to: from,
           type: "text",
-          text: { body: "✅ Bot activo en Render" }
+          text: { body: respuesta }
         }
       });
 
