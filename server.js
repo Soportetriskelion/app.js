@@ -51,8 +51,20 @@ app.post("/webhook", async (req, res) => {
   let respuesta = "";
 
   if (fueraDeHorario()) {
-    respuesta = "⏰ Gracias por contactarnos.\nNuestro horario de atención es de 8:00 AM a 6:00 PM.\nTu mensaje fue recibido y te responderemos en cuanto estemos disponibles.";
-  } else {
+   respuesta = `👋 Gracias por comunicarte con soporte técnico.
+
+Nuestro horario es de 8:00 am a 6:00 pm.
+
+Mientras tanto puedes escribir:
+
+1️⃣ No tengo señal GPS
+2️⃣ La plataforma no abre
+3️⃣ No puedo ver mi unidad
+4️⃣ Reportar robo o emergencia
+5️⃣ Hablar con soporte
+
+Escribe el número de tu problema.`;
+} else {
     respuesta = "✅ Gracias por comunicarte con soporte técnico.\n¿En qué podemos ayudarte?";
   }
       await axios({
